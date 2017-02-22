@@ -17,6 +17,7 @@ struct MetaNode {
   bool compress;
   int id;
   char link[4096];
+  long cont_pos;
   struct DirList* dir;
   struct MetaNode* next;
 };

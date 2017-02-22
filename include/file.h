@@ -8,6 +8,7 @@ struct File {
   FILE* f;
   long cont_pos;
   long meta_pos;
+  long dir_pos;
   struct MetaList* meta;
 };
 

@@ -10,8 +10,7 @@ void DirListInit(struct DirList** list) {
     exit(EXIT_FAILURE);
   }
   (*list)->size = 0;
-  DirNodeInit(&(*list)->head, NULL, NULL);
-  (*list)->tail = (*list)->head;
+  (*list)->tail = (*list)->head = NULL;
 }
 
 void DirListReset(struct DirList** list) {
@@ -40,13 +39,13 @@ void DirListInsert(struct DirList* list, const char* name, const struct MetaNode
 }
 
 void DirListPrintName(struct DirList* list, int lvl) {
-  struct DirNode* it = list->head->next;
+  struct DirNode* it = list->head;
   while (it != NULL) {
-    for (int i = 0; i < lvl; ++i) {
-      printf("  ");
-    }
-    printf("%s\n", it->name);
     if (strcmp(it->name, ".") != 0 && strcmp(it->name, "..") != 0) {
+      for (int i = 0; i < lvl; ++i) {
+        printf("  ");
+      }
+      printf("%s\n", it->name);
       DirListPrintName(it->meta->dir, lvl + 1);
     }
     it = it->next;
@@ -54,7 +53,7 @@ void DirListPrintName(struct DirList* list, int lvl) {
 }
 
 void DirListPrintMeta(struct DirList* list) {
-  struct DirNode* it = list->head->next;
+  struct DirNode* it = list->head;
   char buf[100];
   while (it != NULL) {
     if (it->meta->id != 0) {
@@ -72,7 +71,7 @@ void DirListPrintMeta(struct DirList* list) {
     }
     it = it->next;
   }
-  if (list->head->next != NULL) {
+  if (list->head != NULL) {
     printf("\n");
   }
 }
@@ -81,7 +80,7 @@ bool DirListQuery(struct DirList* list, const char* path) {
   if (path[0] == '\0') {
     return true;
   }
-  struct DirNode* it = list->head->next;
+  struct DirNode* it = list->head;
   int len = strlen(path);
   char* first = malloc(strlen(path) + 1);
   int f_len = 0;
