@@ -4,7 +4,8 @@ OBJS = build/main.o \
        build/meta_list.o \
        build/meta_node.o \
        build/dir_list.o \
-       build/dir_node.o
+       build/dir_node.o \
+       build/file.o
 
 BIN = mydiz
 
@@ -40,6 +41,9 @@ build/dir_list.o : src/dir_list.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 build/dir_node.o : src/dir_node.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+build/file.o : src/file.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(BIN) : $(OBJS)

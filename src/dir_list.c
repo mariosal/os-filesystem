@@ -9,6 +9,7 @@ void DirListInit(struct DirList** list) {
   if (*list == NULL) {
     exit(EXIT_FAILURE);
   }
+  (*list)->size = 0;
   DirNodeInit(&(*list)->head, NULL, NULL);
   (*list)->tail = (*list)->head;
 }
@@ -35,6 +36,7 @@ void DirListInsert(struct DirList* list, const char* name, const struct MetaNode
     list->tail->next = tmp;
   }
   list->tail = tmp;
+  ++list->size;
 }
 
 void DirListPrintName(struct DirList* list, int lvl) {
@@ -75,11 +77,38 @@ void DirListPrintMeta(struct DirList* list) {
   }
 }
 
-void DirListQuery(struct DirList* list, const char* path) {
+bool DirListQuery(struct DirList* list, const char* path) {
+  if (path[0] == '\0') {
+    return true;
+  }
   struct DirNode* it = list->head->next;
-  char buf[100];
+  int len = strlen(path);
+  char* first = malloc(strlen(path) + 1);
+  int f_len = 0;
+  char* second = malloc(strlen(path) + 1);
+  int s_len = 0;
+  int i;
+  for (i = 0; i < len; ++i) {
+    if (path[i] == '/') {
+      break;
+    }
+    first[i] = path[i];
+    ++f_len;
+  }
+  first[f_len] = 0;
+  for (++i; i < len; ++i) {
+    second[s_len] = path[i];
+    ++s_len;
+  }
+  second[s_len] = 0;
+  bool found = false;
   while (it != NULL) {
-    DirListQuery(it->meta->dir, path);
+    if (strcmp(it->name, first) == 0) {
+      found = DirListQuery(it->meta->dir, second);
+    }
     it = it->next;
   }
+  free(first);
+  free(second);
+  return found;
 }

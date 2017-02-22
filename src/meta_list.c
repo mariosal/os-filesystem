@@ -94,6 +94,6 @@ void MetaListPrintMeta(struct MetaList* list) {
 
 void MetaListQuery(struct MetaList* list, char** append, size_t append_len) {
   for (size_t i = 0; i < append_len; ++i) {
-    //printf("%s: %d\n", append[i], DirListQuery(list->head->dir, append[i]));
+    printf("%s: %d\n", append[i], DirListQuery(list->head->dir, append[i]));
   }
 }

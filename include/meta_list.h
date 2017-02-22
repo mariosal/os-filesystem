@@ -18,5 +18,7 @@ const struct MetaNode* MetaListInsert(struct MetaList* list, const char* path,
                                       const struct MetaNode* parent);
 void MetaListPrintName(struct MetaList* list);
 void MetaListPrintMeta(struct MetaList* list);
+void MetaListQuery(struct MetaList* list, char** append, size_t append_len);
+
 
 #endif  // META_LIST_H_
