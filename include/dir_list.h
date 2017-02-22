@@ -12,7 +12,7 @@ struct DirList {
 
 void DirListInit(struct DirList** list);
 void DirListReset(struct DirList** list);
-void DirListInsert(struct DirList* list, const char* name, const struct MetaNode* meta);
+void DirListInsert(struct DirList* list, const char* name, struct MetaNode* meta);
 void DirListPrintName(struct DirList* list, int lvl);
 void DirListPrintMeta(struct DirList* list);
 bool DirListQuery(struct DirList* list, const char* path);

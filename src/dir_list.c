@@ -26,7 +26,7 @@ void DirListReset(struct DirList** list) {
   }
 }
 
-void DirListInsert(struct DirList* list, const char* name, const struct MetaNode* meta) {
+void DirListInsert(struct DirList* list, const char* name, struct MetaNode* meta) {
   struct DirNode* tmp;
   DirNodeInit(&tmp, name, meta);
   if (list->head == NULL) {

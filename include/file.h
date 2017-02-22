@@ -14,6 +14,7 @@ struct File {
 
 void FileCreate(const char* path);
 void FileOpen(struct File** file, const char* path);
+void FileExtract(struct File* file, const char* path);
 void FileSave(struct File* file);
 void FileClose(struct File** file);
 

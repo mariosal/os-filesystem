@@ -15,11 +15,18 @@ void MetaNodeInit(struct MetaNode** node, const struct stat* info,
     (*node)->size = info->st_size;
     (*node)->time[0] = info->st_atim;
     (*node)->time[1] = info->st_mtim;
+  } else {
+    (*node)->mode = 0;
+    (*node)->uid = 0;
+    (*node)->gid = 0;
+    (*node)->size = 0;
+    memset((*node)->time, 0, sizeof((*node)->time));
   }
   (*node)->compress = compress;
   (*node)->id = id;
   memset((*node)->link, 0, sizeof((*node)->link));
   DirListInit(&(*node)->dir);
+  (*node)->cont_pos = 0;
   (*node)->next = NULL;
 }
 

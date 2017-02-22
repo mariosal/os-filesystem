@@ -37,9 +37,9 @@ void MetaListInsertHead(struct MetaList* list, char** append, size_t append_len,
   }
 }
 
-const struct MetaNode* MetaListInsert(struct MetaList* list, const char* path,
-                                      bool compress,
-                                      const struct MetaNode* parent) {
+struct MetaNode* MetaListInsert(struct MetaList* list, const char* path,
+                                bool compress,
+                                struct MetaNode* parent) {
   struct stat info;
   if (lstat(path, &info) != 0) {
     return NULL;
@@ -54,6 +54,7 @@ const struct MetaNode* MetaListInsert(struct MetaList* list, const char* path,
     list->tail->next = tmp;
   }
   list->tail = tmp;
+  ++list->size;
 
   char* newpath = malloc(sizeof(*newpath));
   newpath[0] = '\0';

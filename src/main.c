@@ -77,6 +77,9 @@ int main(int argc, char** argv) {
   if (query) {
     MetaListQuery(file->meta, append, append_len);
   }
+  if (extract) {
+    FileExtract(file, "output");
+  }
 
   for (size_t i = 0; i < append_len; ++i) {
     free(append[i]);

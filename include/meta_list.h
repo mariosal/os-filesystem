@@ -13,9 +13,9 @@ void MetaListInit(struct MetaList** list);
 void MetaListReset(struct MetaList** list);
 void MetaListInsertHead(struct MetaList* list, char** append, size_t append_len,
                         bool compress);
-const struct MetaNode* MetaListInsert(struct MetaList* list, const char* path,
-                                      bool compress,
-                                      const struct MetaNode* parent);
+struct MetaNode* MetaListInsert(struct MetaList* list, const char* path,
+                                bool compress,
+                                struct MetaNode* parent);
 void MetaListPrintName(struct MetaList* list);
 void MetaListPrintMeta(struct MetaList* list);
 void MetaListQuery(struct MetaList* list, char** append, size_t append_len);
