@@ -113,18 +113,18 @@ void FileOpen(struct File** file, const char* path) {
   free(map);
 }
 
-void FileExtract(struct File* file, const char* path) {
+static void FileExtractHelper(struct File* file, struct DirList* list, const char* path) {
   char* newpath = malloc(sizeof(*newpath));
   newpath[0] = '\0';
   size_t newpath_cap = 1;
-  struct DirNode* it = file->meta->head->dir->head;
+  struct DirNode* it = list->head;
   while (it != NULL) {
     if (strcmp(it->name, ".") != 0 && strcmp(it->name, "..") != 0) {
       while (strlen(path) + 1 + strlen(it->name) > newpath_cap - 1) {
         newpath_cap *= 2;
         newpath = realloc(newpath, newpath_cap);
       }
-      snprintf(newpath, newpath_cap, "output/%s/%s", path, it->name);
+      snprintf(newpath, newpath_cap, "%s/%s", path, it->name);
 
       char buf[1024];
       if (S_ISREG(it->meta->mode)) {
@@ -136,8 +136,9 @@ void FileExtract(struct File* file, const char* path) {
         free(buf);
         fclose(out);
       } else if (S_ISDIR(it->meta->mode)) {
-        snprintf(buf, sizeof(buf), "mkdir %s", newpath);
+        snprintf(buf, sizeof(buf), "mkdir -p %s", newpath);
         system(buf);
+        FileExtractHelper(file, it->meta->dir, newpath);
       } else if (S_ISLNK(it->meta->mode)) {
         snprintf(buf, sizeof(buf), "ln -s %s %s", it->meta->link, newpath);
         system(buf);
@@ -146,6 +147,10 @@ void FileExtract(struct File* file, const char* path) {
     it = it->next;
   }
   free(newpath);
+}
+
+void FileExtract(struct File* file, const char* path) {
+  FileExtractHelper(file, file->meta->head->dir, path);
 }
 
 static void FileSaveHelper(struct File* file, struct DirList* list, const char* path) {
