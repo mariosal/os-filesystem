@@ -23,6 +23,7 @@ void MetaNodeInit(struct MetaNode** node, const struct stat* info,
     memset((*node)->time, 0, sizeof((*node)->time));
   }
   (*node)->compress = compress;
+  (*node)->com_size = 0;
   (*node)->id = id;
   memset((*node)->link, 0, sizeof((*node)->link));
   DirListInit(&(*node)->dir);

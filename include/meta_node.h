@@ -15,6 +15,7 @@ struct MetaNode {
   off_t size;
   struct timespec time[2];
   bool compress;
+  off_t com_size;
   int id;
   char link[4096];
   long cont_pos;

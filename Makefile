@@ -24,7 +24,7 @@ endif
 .PHONY = all clean
 all : $(BIN)
 clean :
-	$(RM) -r build/* mydiz
+	$(RM) -r build/* output/* mydiz
 
 # Exercise builds
 

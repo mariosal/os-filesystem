@@ -13,6 +13,7 @@ void FileCreate(const char* path) {
                  + sizeof(((struct MetaNode*)NULL)->size)
                  + sizeof(((struct MetaNode*)NULL)->time)
                  + sizeof(((struct MetaNode*)NULL)->compress)
+                 + sizeof(((struct MetaNode*)NULL)->com_size)
                  + sizeof(((struct MetaNode*)NULL)->id)
                  + sizeof(((struct MetaNode*)NULL)->link)
                  + sizeof(((struct MetaNode*)NULL)->cont_pos);
@@ -31,6 +32,7 @@ void FileCreate(const char* path) {
   fwrite(&it.size, 1, sizeof(it.size), file.f);
   fwrite(it.time, 1, sizeof(it.time), file.f);
   fwrite(&it.compress, 1, sizeof(it.compress), file.f);
+  fwrite(&it.com_size, 1, sizeof(it.com_size), file.f);
   fwrite(&it.id, 1, sizeof(it.id), file.f);
   fwrite(it.link, 1, sizeof(it.link), file.f);
   fwrite(&it.cont_pos, 1, sizeof(it.cont_pos), file.f);
@@ -43,7 +45,6 @@ void FileOpen(struct File** file, const char* path) {
   if (*file == NULL) {
     exit(EXIT_FAILURE);
   }
-  long header_size = sizeof((*file)->cont_pos) + sizeof((*file)->meta_pos);
 
   (*file)->f = fopen(path, "r+b");
   fread(&(*file)->cont_pos, 1, sizeof((*file)->cont_pos), (*file)->f);
@@ -69,6 +70,7 @@ void FileOpen(struct File** file, const char* path) {
     fread(&tmp->size, 1, sizeof(tmp->size), (*file)->f);
     fread(tmp->time, 1, sizeof(tmp->time), (*file)->f);
     fread(&tmp->compress, 1, sizeof(tmp->compress), (*file)->f);
+    fread(&tmp->com_size, 1, sizeof(tmp->com_size), (*file)->f);
     fread(&tmp->id, 1, sizeof(tmp->id), (*file)->f);
     fread(tmp->link, 1, sizeof(tmp->link), (*file)->f);
     fread(&tmp->cont_pos, 1, sizeof(tmp->cont_pos), (*file)->f);
@@ -89,9 +91,8 @@ void FileOpen(struct File** file, const char* path) {
   struct MetaNode* it = (*file)->meta->head;
   while (it != NULL) {
     if (it == (*file)->meta->head || S_ISDIR(it->mode)) {
-      int dir_size;
-      fread(&dir_size, 1, sizeof(dir_size), (*file)->f);
-      for (int i = 0; i < dir_size; ++i) {
+      fread(&it->dir->size, 1, sizeof(it->dir->size), (*file)->f);
+      for (int i = 0; i < it->dir->size; ++i) {
         struct DirNode* tmp = malloc(sizeof(*tmp));
         fread(tmp->name, 1, sizeof(tmp->name), (*file)->f);
         int meta_id;
@@ -128,13 +129,27 @@ static void FileExtractHelper(struct File* file, struct DirList* list, const cha
 
       char buf[1024];
       if (S_ISREG(it->meta->mode)) {
-        FILE* out = fopen(newpath, "wb");
         fseek(file->f, it->meta->cont_pos, SEEK_SET);
-        char* buf = malloc(it->meta->size);
-        fread(buf, 1, it->meta->size, file->f);
-        fwrite(buf, 1, it->meta->size, out);
+        char* buf;
+        if (it->meta->compress) {
+          buf = malloc(it->meta->com_size);
+          fread(buf, 1, it->meta->com_size, file->f);
+          char tmp_path[L_tmpnam];
+          tmpnam(tmp_path);
+          FILE* tmp_out = fopen(tmp_path, "wb");
+          fwrite(buf, 1, it->meta->com_size, tmp_out);
+          fclose(tmp_out);
+          char cmd[1024];
+          snprintf(cmd, sizeof(cmd), "gzip -d < %s > %s", tmp_path, newpath);
+          system(cmd);
+        } else {
+          FILE* out = fopen(newpath, "wb");
+          buf = malloc(it->meta->size);
+          fread(buf, 1, it->meta->size, file->f);
+          fwrite(buf, 1, it->meta->size, out);
+          fclose(out);
+        }
         free(buf);
-        fclose(out);
       } else if (S_ISDIR(it->meta->mode)) {
         snprintf(buf, sizeof(buf), "mkdir -p %s", newpath);
         system(buf);
@@ -167,9 +182,23 @@ static void FileSaveHelper(struct File* file, struct DirList* list, const char* 
       snprintf(newpath, newpath_cap, "%s/%s", path, it->name);
 
       if (S_ISREG(it->meta->mode)) {
-        FILE* in = fopen(newpath, "rb");
+        FILE* in;
+        if (it->meta->compress) {
+          char tmp_path[L_tmpnam];
+          tmpnam(tmp_path);
+          char cmd[4096];
+          snprintf(cmd, sizeof(cmd), "gzip < %s > %s", newpath, tmp_path);
+          system(cmd);
+          in = fopen(tmp_path, "rb");
+        } else {
+          in = fopen(newpath, "rb");
+        }
+
         fseek(in, 0, SEEK_END);
         long in_size = ftell(in);
+        if (it->meta->compress) {
+          it->meta->com_size = in_size;
+        }
         fseek(in, 0, SEEK_SET);
         char* buf = malloc(in_size);
         fread(buf, 1, in_size, in);
@@ -201,6 +230,7 @@ void FileSave(struct File* file) {
     fwrite(&it->size, 1, sizeof(it->size), file->f);
     fwrite(it->time, 1, sizeof(it->time), file->f);
     fwrite(&it->compress, 1, sizeof(it->compress), file->f);
+    fwrite(&it->com_size, 1, sizeof(it->com_size), file->f);
     fwrite(&it->id, 1, sizeof(it->id), file->f);
     fwrite(it->link, 1, sizeof(it->link), file->f);
     fwrite(&it->cont_pos, 1, sizeof(it->cont_pos), file->f);
